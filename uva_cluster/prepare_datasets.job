@@ -1,0 +1,54 @@
+#!/bin/bash
+
+#SBATCH --nodes=1
+#SBATCH --job-name=prepare_moe_llava_dataset
+#SBATCH --ntasks=1
+#SBATCH --time=04:00:00
+#SBATCH --cpus-per-task=1
+#SBATCH --mem=4G  
+#SBATCH --output=slurm_output_%A.out
+
+# Define base directory
+SCRATCH_DIR="/scratch-shared/$USER"
+
+# Define paths for MoE_LLaVA_dataset download and extraction directories
+MOE_LLAVA_DIR="$SCRATCH_DIR/moe-llava"
+MOE_LLAVA_HF_LINK="https://huggingface.co/datasets/LanguageBind/MoE-LLaVA/resolve/main/"
+
+# Create necessary directories
+mkdir -p "$MOE_LLAVA_DIR"
+
+# Download training files if they don't already exist
+cd $MOE_LLAVA_DIR
+datasets=("llava_image.zip" "llava_image_tune_2.zip.001" "llava_image_tune_2.zip.002" "lrv_tune.zip" "lvis_tune.zip" "svit_tune.zip" )
+
+# Down through each file in the list
+for dataset_name in "${datasets[@]}"; do
+  # Check if the file exists
+  if [ ! -f "$dataset_name" ]; then
+    echo "Downloading $dataset_name ..."
+    srun wget -nc "$MOE_LLAVA_HF_LINK/$dataset_name"
+  fi
+done
+
+mkdir -p mimicit_tune
+cd mimicit_tune
+if [ ! -f "LA.zip" ]; then
+    srun wget -nc "$MOE_LLAVA_HF_LINK/mimicit_tune/LA.zip"
+fi
+
+# Download train jsons 
+MOE_LLAVA_JSON_DIR="$MOE_LLAVA_DIR/train_json"
+mkdir -p "$MOE_LLAVA_JSON_DIR"
+cd $MOE_LLAVA_JSON_DIR
+
+jsons=("la_tune_256k.json" "llava_image_.json" "llava_image_tune_.json" "lrv_tune_331k.json" "lvis_tune_220k_.json" "nlp_tune.json" "sharegpt4v_1246k_.json" "sharegpt4v_tune_624k_.json" "svit_tune_157k.json")
+
+# Down through each file in the list
+for json_name in "${jsons[@]}"; do
+  # Check if the file exists
+  if [ ! -f "$json_name" ]; then
+    echo "Downloading $json_name ..."
+    srun wget -nc "$MOE_LLAVA_HF_LINK/train_json/$json_name"
+  fi
+done
