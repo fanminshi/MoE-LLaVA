@@ -3,7 +3,7 @@
 #SBATCH --nodes=1
 #SBATCH --job-name=prepare_moe_llava_dataset
 #SBATCH --ntasks=1
-#SBATCH --time=04:00:00
+#SBATCH --time=10:00:00
 #SBATCH --cpus-per-task=1
 #SBATCH --mem=4G  
 #SBATCH --output=slurm_output_%A.out
@@ -13,16 +13,18 @@ SCRATCH_DIR="/scratch-shared/$USER"
 
 # Define paths for MoE_LLaVA_dataset download and extraction directories
 MOE_LLAVA_DIR="$SCRATCH_DIR/moe-llava"
-MOE_LLAVA_HF_LINK="https://huggingface.co/datasets/LanguageBind/MoE-LLaVA/resolve/main/"
+MOE_LLAVA_IMAGE_DIR="$SCRATCH_DIR/moe-llava/images"
+
+MOE_LLAVA_HF_LINK="https://huggingface.co/datasets/LanguageBind/MoE-LLaVA/resolve/main"
 
 # Create necessary directories
-mkdir -p "$MOE_LLAVA_DIR"
+mkdir -p "$MOE_LLAVA_IMAGE_DIR"
 
 # Download training files if they don't already exist
 cd $MOE_LLAVA_DIR
 datasets=("llava_image.zip" "llava_image_tune_2.zip.001" "llava_image_tune_2.zip.002" "lrv_tune.zip" "lvis_tune.zip" "svit_tune.zip" )
 
-# Down through each file in the list
+# Download each file from the list
 for dataset_name in "${datasets[@]}"; do
   # Check if the file exists
   if [ ! -f "$dataset_name" ]; then
@@ -31,11 +33,34 @@ for dataset_name in "${datasets[@]}"; do
   fi
 done
 
+# Concat llava_image_tune_2 split files into one zip
+LLAVA_IMAGE_TUNE_ZIP=llava_image_tune_2.zip
+if [ ! -f "$LLAVA_IMAGE_TUNE_ZIP" ]; then
+  cat llava_image_tune_2.zip.* > "$LLAVA_IMAGE_TUNE_ZIP"
+  # This unzip creates llava_image_tune.zip
+  unzip "$LLAVA_IMAGE_TUNE_ZIP" 
+  # unzip llava_image_tune.zip
+  unzip llava_image_tune.zip -d "$MOE_LLAVA_IMAGE_DIR"
+fi
+
+# Unzip each file from the list
+for dataset_name in "${datasets[@]}"; do
+  # Don't unzip llava_image_tune_2.zip part files
+  # we will deal with that later
+  if [[ ! $dataset_name =~ "llava_image_tune_2.zip.*" ]]; then
+    unzip -n "$dataset_name" -d "$MOE_LLAVA_IMAGE_DIR"
+  fi
+done
+
+# Download mimicit_tune/LA.zip
 mkdir -p mimicit_tune
 cd mimicit_tune
 if [ ! -f "LA.zip" ]; then
     srun wget -nc "$MOE_LLAVA_HF_LINK/mimicit_tune/LA.zip"
 fi
+
+# Unzip mimicit_tune/LA.zip
+unzip -n "$dataset_name" -d "$MOE_LLAVA_IMAGE_DIR"/mimicit_tune
 
 # Download train jsons 
 MOE_LLAVA_JSON_DIR="$MOE_LLAVA_DIR/train_json"
