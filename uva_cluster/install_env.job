@@ -15,4 +15,7 @@ conda activate moellava
 pip install --upgrade pip
 pip install -e .
 pip install -e ".[train]"
-pip install flash-attn --no-build-isolation 
+pip install torch==2.1.1+cu118 -f https://download.pytorch.org/whl/torch_stable.html 
+pip install torchvision==0.16.1+cu118 -f https://download.pytorch.org/whl/cu118
+pip install flash-attn==2.3.1.post1  --no-build-isolationls
+pip install flash-attn --no-build-isolation
