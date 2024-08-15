@@ -6,8 +6,8 @@
 #SBATCH --ntasks-per-node=8
 #SBATCH --nodes=1
 #SBATCH --time=22:59:59
-#SBATCH --output=moe-llava_output_%A.out
-#SBATCH --error=moe-llava_output_%A.err
+#SBATCH --output=moe-llava-moe_output_%A.out
+#SBATCH --error=moe-llava-moe_output_%A.err
 
 SCRATCH_DIR="/scratch-shared/$USER"
 MOE_LLAVA_DIR="$SCRATCH_DIR/moe-llava"
