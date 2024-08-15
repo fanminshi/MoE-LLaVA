@@ -6,8 +6,8 @@
 #SBATCH --ntasks-per-node=8
 #SBATCH --nodes=1
 #SBATCH --time=22:59:59
-#SBATCH --output=moe-llava_output_%A.out
-#SBATCH --error=moe-llava_output_%A.err
+#SBATCH --output=moe-llava-finetune_output_%A.out
+#SBATCH --error=moe-llava-finetune_output_%A.err
 
 SCRATCH_DIR="/scratch-shared/$USER"
 MOE_LLAVA_DIR="$SCRATCH_DIR/moe-llava"
@@ -45,9 +45,9 @@ deepspeed moellava/train/train_mem.py \
     --bf16 True \
     --output_dir $CHECKPOINT_DIR/llavaphi-2.7b-finetune \
     --num_train_epochs 1 \
-    --per_device_train_batch_size 8 \
+    --per_device_train_batch_size 16 \
     --per_device_eval_batch_size 4 \
-    --gradient_accumulation_steps 2 \
+    --gradient_accumulation_steps 1 \
     --evaluation_strategy "no" \
     --save_strategy "steps" \
     --save_steps 50000 \

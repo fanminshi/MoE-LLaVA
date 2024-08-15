@@ -38,9 +38,9 @@ LLAVA_IMAGE_TUNE_ZIP=llava_image_tune_2.zip
 if [ ! -f "$LLAVA_IMAGE_TUNE_ZIP" ]; then
   cat llava_image_tune_2.zip.* > "$LLAVA_IMAGE_TUNE_ZIP"
   # This unzip creates llava_image_tune.zip
-  unzip "$LLAVA_IMAGE_TUNE_ZIP" 
+  unzip -n "$LLAVA_IMAGE_TUNE_ZIP" 
   # unzip llava_image_tune.zip
-  unzip llava_image_tune.zip -d "$MOE_LLAVA_IMAGE_DIR"
+  unzip -n llava_image_tune.zip -d "$MOE_LLAVA_IMAGE_DIR"
 fi
 
 # Unzip each file from the list
@@ -60,6 +60,7 @@ if [ ! -f "LA.zip" ]; then
 fi
 
 # Unzip mimicit_tune/LA.zip
+mkdir -p "$MOE_LLAVA_IMAGE_DIR"/mimicit_tune
 unzip -n "$dataset_name" -d "$MOE_LLAVA_IMAGE_DIR"/mimicit_tune
 
 # Download train jsons 

@@ -29,6 +29,9 @@ top_k_experts=2
 use_residual=False
 router_aux_loss_coef=0.01
 cd /home/fshi/MoE-LLaVA
+
+export WANDB_PROJECT=mix-moe-dense
+
 deepspeed moellava/train/train_mem.py \
     --moe_enable True --num_experts ${num_experts} --top_k_experts ${top_k_experts} --capacity_factor 1.5 \
     --moe_mode ${moe_mode} --use_residual ${use_residual} --router_aux_loss_coef ${router_aux_loss_coef} \
@@ -65,5 +68,5 @@ deepspeed moellava/train/train_mem.py \
     --gradient_checkpointing True \
     --dataloader_num_workers 4 \
     --lazy_preprocess True \
-    --report_to tensorboard \
+    --report_to wandb \
     --cache_dir "./cache_dir"
