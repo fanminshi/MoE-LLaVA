@@ -1,0 +1,39 @@
+#!/bin/bash
+#SBATCH --partition=gpu_h100
+#SBATCH --job-name=grmoe
+#SBATCH --gpus=1
+#SBATCH --cpus-per-task=4
+#SBATCH --ntasks-per-node=8
+#SBATCH --nodes=1
+#SBATCH --time=22:59:59
+#SBATCH --output=eval_textvqa_output_%A.out
+#SBATCH --error=eval_textvqa_output_%A.err
+
+SCRATCH_DIR="/scratch-shared/$USER"
+MOE_LLAVA_DIR="$SCRATCH_DIR/moe-llava"
+CHECKPOINT_DIR=$MOE_LLAVA_DIR/checkpoints
+EVAL="$MOE_LLAVA_DIR/eval"
+
+# Activate your environment
+module purge
+module load 2023
+module load Anaconda3/2023.07-2
+
+cd /home/fshi/MoE-LLaVA
+source activate moellava
+
+CONV="conv_template"
+CKPT_NAME=llavaphi-2.7b-finetune-moe
+CKPT="$CHECKPOINT_DIR/$CKPT_NAME"
+
+deepspeed moellava/eval/model_vqa_loader.py \
+    --model-path ${CKPT} \
+    --question-file ${EVAL}/textvqa/llava_textvqa_val_v051_ocr.jsonl \
+    --image-folder ${EVAL}/textvqa/train_images \
+    --answers-file ${EVAL}/textvqa/answers/llava-v1.5-13b.jsonl \
+    --temperature 0 \
+    --conv-mode ${CONV}
+
+python3 -m moellava.eval.eval_textvqa \
+    --annotation-file ${EVAL}/textvqa/TextVQA_0.5.1_val.json \
+    --result-file ${EVAL}/textvqa/answers/llava-v1.5-13b.jsonl
